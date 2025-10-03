@@ -1,0 +1,1 @@
+tracepoint:syscalls:sys_enter_openat { printf("%s opened %s\n", comm, str(args->filename)); }

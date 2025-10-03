@@ -1,0 +1,1 @@
+tracepoint:syscalls:sys_enter_* { @[probe] = count(); }
