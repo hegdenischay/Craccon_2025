@@ -1,0 +1,1 @@
+uprobe:libc:malloc { printf("malloc(%d)\n", arg0);}

@@ -1,0 +1,1 @@
+uprobe:/bin/bash:* {print(ustack); }

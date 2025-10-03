@@ -1,0 +1,29 @@
+[thatloststudent@mirai]$ sudo tcpdump -d -i eth0 'tcp port 80'
+# TCP Port 80 Filter - BPF Bytecode with Inline Comments
+
+(000) ldh      [12]                    # Load EtherType from Ethernet header (offset 12)
+(001) jeq      #0x86dd   jt 2   jf 8   # Jump to IPv6 handler (2) if 0x86dd, else IPv4 (8)
+
+# IPv6 Processing Path
+(002) ldb      [20]                    # Load Next Header field from IPv6 header
+(003) jeq      #0x6      jt 4   jf 19  # If TCP protocol (6), continue to port check, else reject
+(004) ldh      [54]                    # Load TCP source port (IPv6 header is 40 bytes + 14 eth = 54)
+(005) jeq      #0x50     jt 18  jf 6   # If source port 80 (0x50), accept, else check dest port
+(006) ldh      [56]                    # Load TCP destination port (source port + 2 bytes)
+(007) jeq      #0x50     jt 18  jf 19  # If dest port 80, accept, else reject packet
+
+# IPv4 Processing Path
+(008) jeq      #0x800    jt 9   jf 19  # If IPv4 EtherType (0x800), continue, else reject
+(009) ldb      [23]                    # Load protocol field from IPv4 header (offset 23)
+(010) jeq      #0x6      jt 11  jf 19  # If TCP protocol (6), continue, else reject
+(011) ldh      [20]                    # Load flags/fragment offset from IPv4 header
+(012) jset     #0x1fff   jt 19  jf 13  # If fragmented (any frag bits set), reject
+(013) ldxb     4*([14]&0xf)            # Calculate IPv4 header length: IHL field * 4, store in X
+(014) ldh      [x + 14]                # Load TCP source port (IPv4 header + Ethernet header)
+(015) jeq      #0x50     jt 18  jf 16  # If source port 80, accept, else check dest port
+(016) ldh      [x + 16]                # Load TCP destination port (source port + 2 bytes)
+(017) jeq      #0x50     jt 18  jf 19  # If dest port 80, accept, else reject
+
+# Return Instructions
+(018) ret      #262144                 # ACCEPT: Return max capture length (256KB)
+(019) ret      #0                      # REJECT: Return 0 (drop packet)
