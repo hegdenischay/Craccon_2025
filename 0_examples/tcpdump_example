@@ -1,4 +1,4 @@
-[thatloststudent@mirai]$ sudo tcpdump -d -i eth0 'tcp port 80'
+[tlh@mirai]$ sudo tcpdump -d -i eth0 'tcp port 80'
 # TCP Port 80 Filter - BPF Bytecode with Inline Comments
 
 (000) ldh      [12]                    # Load EtherType from Ethernet header (offset 12)
